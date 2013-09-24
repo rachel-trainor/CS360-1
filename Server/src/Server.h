@@ -6,15 +6,26 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <unistd.h>
+#include <semaphore.h>
+#include <pthread.h>
 
 #include <string>
 #include <iostream>
 #include <sstream>
 #include <map>
 #include <vector>
+#include <queue>
 #include "Message.h"
 
 using namespace std;
+
+void* doWork(void*);
+
+struct thdata_ {
+	int number;
+	queue<int> clients;
+	sem_t sem;
+};
 
 class Server {
 public:
@@ -24,8 +35,14 @@ public:
 
 private:
 
+//	struct thdata_ {
+//		queue<int> clients;
+//		sem_t sem;
+//	} thdata;
+
 	void create();
 	void serve();
+	void makeThreads(int);
 	void handle(int);
 	string parseRequest(string);
 	int readToSentinel(char, string);
@@ -51,4 +68,6 @@ private:
 	int buflen_;
 	char* buf_;
 	map<string, vector<Message> > messageList;
+	vector<pthread_t*> threads;
+	//queue<int> clients;
 };

@@ -20,6 +20,7 @@ Server::Server(int port, bool debug) {
 
 	// create and run the server
 	create();
+	makeThreads(10);
 	serve();
 }
 
@@ -80,8 +81,41 @@ void Server::serve() {
 		close(client);
 	}
 
+	while(true) {
+		client = accept(server_, (struct sockaddr *) &client_addr,
+					&clientlen);
+
+		if(client > 0) {
+			//add to client queue
+			struct thdata_ thdata;
+			thdata.clients.push(client);
+		} else {
+			cout << "error accepting client" << endl;
+		}
+	}
+
 	close(server_);
 
+}
+
+void *doWork(void *vptr){
+
+//	struct thdata_* data;
+//	data = (struct thdata_*) vptr;
+
+}
+
+void Server::makeThreads(int numThreads) {
+	for(int i = 0; i < numThreads; i++) {
+//		struct thdata_ thdata;
+//		pthread_t* thread = new pthread_t;
+//		thdata* data = new thdata;
+//		data->number = i+1;
+//		thdata.number = i+1;
+//		pthread_create(thread, NULL, &print, (void *) data);
+//		pthread_create(thread, NULL, &doWork, &thdata);
+//		threads.push_back(thread);
+	}
 }
 
 void Server::handle(int client) {
