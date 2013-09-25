@@ -16,10 +16,11 @@
 #include <vector>
 #include <queue>
 #include "Message.h"
+#include "Buffer.h"
 
 using namespace std;
 
-void* doWork(void*);
+void *doWork(void *);
 
 struct thdata_ {
 	int number;
@@ -34,11 +35,6 @@ public:
 	~Server();
 
 private:
-
-//	struct thdata_ {
-//		queue<int> clients;
-//		sem_t sem;
-//	} thdata;
 
 	void create();
 	void serve();
@@ -69,5 +65,6 @@ private:
 	char* buf_;
 	map<string, vector<Message> > messageList;
 	vector<pthread_t*> threads;
+	Buffer buffer; //buffer has a queue of clients
 	//queue<int> clients;
 };

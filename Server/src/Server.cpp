@@ -17,6 +17,7 @@ Server::Server(int port, bool debug) {
 	this->debug = debug;
 	buflen_ = 1024;
 	buf_ = new char[buflen_ + 1];
+	buffer = Buffer();
 
 	// create and run the server
 	create();
@@ -87,8 +88,12 @@ void Server::serve() {
 
 		if(client > 0) {
 			//add to client queue
-			struct thdata_ thdata;
-			thdata.clients.push(client);
+			//append();
+//			thdata_ thdata;
+//			thdata.clients.push(client);
+
+			buffer.append(client);
+
 		} else {
 			cout << "error accepting client" << endl;
 		}
@@ -98,16 +103,25 @@ void Server::serve() {
 
 }
 
-void *doWork(void *vptr){
+void *
+doWork(void *vptr){
 
-//	struct thdata_* data;
-//	data = (struct thdata_*) vptr;
+	struct thdata_* data;
+	data = (struct thdata_*) vptr;
 
 }
 
 void Server::makeThreads(int numThreads) {
 	for(int i = 0; i < numThreads; i++) {
-//		struct thdata_ thdata;
+
+		pthread_t thread;
+		thdata_ thdata;
+
+		pthread_create(&thread, NULL, &doWork, &thdata);
+		threads.push_back(&thread);
+
+
+//		thdata_ thdata;
 //		pthread_t* thread = new pthread_t;
 //		thdata* data = new thdata;
 //		data->number = i+1;
