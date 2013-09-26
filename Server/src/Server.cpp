@@ -18,6 +18,7 @@ Server::Server(int port, bool debug) {
 	buflen_ = 1024;
 	buf_ = new char[buflen_ + 1];
 	buffer = Buffer();
+	sem_init(&serverLock, 0, 1);
 
 	// create and run the server
 	create();
@@ -75,24 +76,25 @@ void Server::serve() {
 	socklen_t clientlen = sizeof(client_addr);
 
 	// accept clients
-	while ((client = accept(server_, (struct sockaddr *) &client_addr,
-			&clientlen)) > 0) {
+//	while ((client = accept(server_, (struct sockaddr *) &client_addr,
+//			&clientlen)) > 0) {
+//
+//		handle(client);
+//		close(client);
+//	}
 
-		handle(client);
-		close(client);
-	}
+	while (true) {
+		client = accept(server_, (struct sockaddr *) &client_addr, &clientlen);
 
-	while(true) {
-		client = accept(server_, (struct sockaddr *) &client_addr,
-					&clientlen);
-
-		if(client > 0) {
+		if (client > 0) {
 			//add to client queue
 			//append();
 //			thdata_ thdata;
 //			thdata.clients.push(client);
 
 			buffer.append(client);
+			//client = buffer.take(); //TODO get rid of take here
+			//handle(client); //TODO get rid of handle here
 
 		} else {
 			cout << "error accepting client" << endl;
@@ -103,23 +105,38 @@ void Server::serve() {
 
 }
 
-void *
-doWork(void *vptr){
+void * doWork(void *vptr) {
 
-	struct thdata_* data;
-	data = (struct thdata_*) vptr;
+//	struct thdata_* data;
+//	data = (struct thdata_*) vptr;
+
+	Server* s;
+	s = (Server*) vptr;
+
+	while (1) {
+
+		int currClient = s->buffer.take();			//.buff.front();
+		cout << currClient << endl;
+		s->handle(currClient);
+	}
+
+//	Buffer* b;
+//	b = (Buffer*) vptr;
+//
+//	int currClient = b->buff.front();
+//	handle(currClient);
 
 }
 
 void Server::makeThreads(int numThreads) {
-	for(int i = 0; i < numThreads; i++) {
+	for (int i = 0; i < numThreads; i++) {
 
 		pthread_t thread;
 		thdata_ thdata;
 
-		pthread_create(&thread, NULL, &doWork, &thdata);
+		//pthread_create(&thread, NULL, &doWork, &buffer);//&thdata);
+		pthread_create(&thread, NULL, &doWork, this);
 		threads.push_back(&thread);
-
 
 //		thdata_ thdata;
 //		pthread_t* thread = new pthread_t;
@@ -160,10 +177,13 @@ void Server::handle(int client) {
 		if (not success)
 			break;
 	}
+
+	// ToDo close here?
+	close(client);
 }
 
 string Server::parseRequest(string line) {
-	int index = readToSentinel(' ', line);
+	size_t index = readToSentinel(' ', line);
 	string command = line.substr(0, index);
 
 	if (line.size() > index + 1) {
@@ -180,7 +200,7 @@ string Server::parseRequest(string line) {
 
 int Server::readToSentinel(char sentinel, string line) {
 	string toReturn = "";
-	int i = 0;
+	size_t i = 0;
 
 	for (i = 0; i < line.size(); i++) {
 		if (line.at(i) != sentinel) {
@@ -209,7 +229,7 @@ string Server::isSpecial(string value, string theRest) {
 
 string Server::put(string line) {
 
-	int index = readToSentinel(' ', line);
+	size_t index = readToSentinel(' ', line);
 	string user = line.substr(0, index);
 
 	if (line.size() > index + 1) {
@@ -261,7 +281,7 @@ string Server::list(string line) {
 
 string Server::get(string line) {
 
-	int index = readToSentinel(' ', line);
+	size_t index = readToSentinel(' ', line);
 	string user = line.substr(0, index);
 
 	if (line.size() > index + 1) {
@@ -288,11 +308,17 @@ string Server::get(string line) {
 }
 
 string Server::reset() {
+	sem_wait(&serverLock);
+
 	messageList.clear();
+
+	sem_post(&serverLock);
 	return "OK\n";
 }
 
 string Server::addToMap(Message m) {
+	sem_wait(&serverLock);
+
 	map<string, vector<Message> >::iterator it;
 	string name = m.getUser();
 
@@ -302,6 +328,7 @@ string Server::addToMap(Message m) {
 				it->second.push_back(m);
 				break;
 			} else {
+				sem_post(&serverLock);
 				return "error in addToMap\n";
 			}
 		}
@@ -311,10 +338,12 @@ string Server::addToMap(Message m) {
 		messageList.insert(pair<string, vector<Message> >(name, tempVector));
 	}
 
+	sem_post(&serverLock);
 	return "OK\n";
 }
 
 bool Server::contains(string name) {
+	//sem_wait(&lock);
 	map<string, vector<Message> >::iterator it;
 
 	for (it = messageList.begin(); it != messageList.end(); ++it) {
@@ -323,10 +352,12 @@ bool Server::contains(string name) {
 		}
 	}
 
+	//sem_post(&lock);
 	return false;
 }
 
 string Server::listResponse(string name) {
+	sem_wait(&serverLock);
 	map<string, vector<Message> >::iterator it;
 	string toReturn = "list ";
 
@@ -343,10 +374,12 @@ string Server::listResponse(string name) {
 		}
 	}
 
+	sem_post(&serverLock);
 	return toReturn;
 }
 
-string Server::getResponse(string name, int index) {
+string Server::getResponse(string name, size_t index) {
+	sem_wait(&serverLock);
 	map<string, vector<Message> >::iterator it;
 	string toReturn = "";
 
@@ -355,6 +388,7 @@ string Server::getResponse(string name, int index) {
 			if (it->second.size() > index - 1) {
 				toReturn = it->second.at(index - 1).toString();
 				//toReturn += "\n";
+				sem_post(&serverLock);
 				return toReturn;
 			} else {
 				toReturn = "error no message at that index\n";
@@ -362,10 +396,12 @@ string Server::getResponse(string name, int index) {
 		}
 	}
 
+	sem_post(&serverLock);
 	return toReturn;
 }
 
 string Server::printMap() {
+	sem_wait(&serverLock);
 	map<string, vector<Message> >::iterator it;
 	string toReturn = intToString(messageList.size());
 	toReturn += "\n";
@@ -380,6 +416,7 @@ string Server::printMap() {
 		}
 	}
 
+	sem_post(&serverLock);
 	return toReturn;
 }
 
@@ -451,7 +488,7 @@ string Server::get_request(int client) {
 }
 
 int Server::determineLength(string line) {
-	int index = readToSentinel(' ', line);
+	size_t index = readToSentinel(' ', line);
 	string command = line.substr(0, index);
 
 	if (command == "put") {
@@ -464,7 +501,7 @@ int Server::determineLength(string line) {
 			}
 		}
 
-		int index = readToSentinel(' ', line);
+		index = readToSentinel(' ', line);
 		string user = line.substr(0, index);
 
 		if (line.size() > index + 1) {

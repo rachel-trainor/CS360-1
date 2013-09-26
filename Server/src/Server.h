@@ -34,12 +34,15 @@ public:
 	Server(int, bool);
 	~Server();
 
+	void handle(int);
+	Buffer buffer; //buffer has a queue of clients
+
 private:
 
 	void create();
 	void serve();
 	void makeThreads(int);
-	void handle(int);
+	//void handle(int);
 	string parseRequest(string);
 	int readToSentinel(char, string);
 	string isSpecial(string, string);
@@ -50,7 +53,7 @@ private:
 	string addToMap(Message);
 	bool contains(string);
 	string listResponse(string);
-	string getResponse(string, int);
+	string getResponse(string, size_t);
 	string printMap();
 	string intToString(int);
 	string get_request(int);
@@ -65,6 +68,7 @@ private:
 	char* buf_;
 	map<string, vector<Message> > messageList;
 	vector<pthread_t*> threads;
-	Buffer buffer; //buffer has a queue of clients
+	sem_t serverLock;
+	//Buffer buffer; //buffer has a queue of clients
 	//queue<int> clients;
 };

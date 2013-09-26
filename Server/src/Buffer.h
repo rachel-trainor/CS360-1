@@ -24,11 +24,11 @@ public:
 
 	void append(int);
 	int take();
+	queue<int> buff; //queue of clients
 
 private:
 
 	//queue<pthread_t*> buff;
-	queue<int> buff; //queue of clients
 	sem_t lock,numClients,emptySpots;
 };
 
