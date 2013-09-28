@@ -116,8 +116,9 @@ void * doWork(void *vptr) {
 	while (1) {
 
 		int currClient = s->buffer.take();			//.buff.front();
-		cout << currClient << endl;
 		s->handle(currClient);
+		// ToDo close here?
+		close(currClient);
 	}
 
 //	Buffer* b;
@@ -132,7 +133,7 @@ void Server::makeThreads(int numThreads) {
 	for (int i = 0; i < numThreads; i++) {
 
 		pthread_t thread;
-		thdata_ thdata;
+		//thdata_ thdata;
 
 		//pthread_create(&thread, NULL, &doWork, &buffer);//&thdata);
 		pthread_create(&thread, NULL, &doWork, this);
@@ -151,9 +152,12 @@ void Server::makeThreads(int numThreads) {
 
 void Server::handle(int client) {
 	// loop to handle all requests
+
 	while (1) {
 		// get a request
+		sem_wait(&serverLock);
 		string request = get_request(client);
+		sem_post(&serverLock);
 
 		// break if client is done or an error occurred
 		if (request.empty()) {
@@ -165,7 +169,9 @@ void Server::handle(int client) {
 			cout << "server received this request: " << request << endl;
 		}
 
+		//sem_wait(&serverLock);
 		string response = parseRequest(request);
+		//sem_post(&serverLock);
 
 		if (debug) {
 			cout << "Server response: " << response << endl;
@@ -179,7 +185,7 @@ void Server::handle(int client) {
 	}
 
 	// ToDo close here?
-	close(client);
+	//close(client);
 }
 
 string Server::parseRequest(string line) {
@@ -269,10 +275,13 @@ string Server::list(string line) {
 	int index = readToSentinel('\n', line);
 	string user = line.substr(0, index);
 
+	sem_wait(&serverLock);
 	if (contains(user)) {
+		sem_post(&serverLock);
 		string lResponse = listResponse(user);
 		return lResponse;
 	} else {
+		sem_post(&serverLock);
 		string error =
 				"error user doesn't exist so he has no messages to list\n";
 		return error;
@@ -297,10 +306,13 @@ string Server::get(string line) {
 	// TODO check that num is a valid number, not random chars
 	int num = atoi(messageNum.c_str());
 
+	sem_wait(&serverLock); //locking around contains
 	if (contains(user)) {
+		sem_post(&serverLock);
 		string gResponse = getResponse(user, num);
 		return gResponse;
 	} else {
+		sem_post(&serverLock);
 		string error = "error user doesn't exist so can't get message\n";
 		return error;
 	}
@@ -326,7 +338,9 @@ string Server::addToMap(Message m) {
 		for (it = messageList.begin(); it != messageList.end(); ++it) {
 			if (it->first == name) {
 				it->second.push_back(m);
-				break;
+				//break;
+				sem_post(&serverLock);
+				return "OK\n";
 			} else {
 				sem_post(&serverLock);
 				return "error in addToMap\n";
@@ -343,7 +357,6 @@ string Server::addToMap(Message m) {
 }
 
 bool Server::contains(string name) {
-	//sem_wait(&lock);
 	map<string, vector<Message> >::iterator it;
 
 	for (it = messageList.begin(); it != messageList.end(); ++it) {
@@ -352,7 +365,6 @@ bool Server::contains(string name) {
 		}
 	}
 
-	//sem_post(&lock);
 	return false;
 }
 

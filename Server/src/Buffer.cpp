@@ -10,7 +10,7 @@
 Buffer::Buffer() {
 	sem_init(&lock,0,1);
 	sem_init(&numClients,0,0);
-	sem_init(&emptySpots,0,10000); //sem_init(&emptySpots,0,buff.size());
+	sem_init(&emptySpots,0,1000); //sem_init(&emptySpots,0,buff.size());
 }
 
 Buffer::~Buffer() {
