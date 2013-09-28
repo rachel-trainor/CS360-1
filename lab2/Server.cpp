@@ -19,7 +19,7 @@ Server::Server(int port, bool debug) {
 	buf_ = new char[buflen_ + 1];
 	buffer = Buffer();
 	sem_init(&serverLock, 0, 1);
-	sem_init(&requestLock, 0, 1);
+	sem_init(&requestLock,0,1);
 
 	// create and run the server
 	create();
@@ -319,21 +319,14 @@ string Server::addToMap(Message& m) {
 }
 
 bool Server::contains(string name) {
+	map<string, vector<Message> >::iterator it;
 
-	if (messageList.find(name) != messageList.end()) {
-		return true;
-	} else {
-		return false;
+	for (it = messageList.begin(); it != messageList.end(); ++it) {
+		if (it->first == name) {
+			return true;
+		}
 	}
-
-//	map<string, vector<Message> >::iterator it;
-//
-//	for (it = messageList.begin(); it != messageList.end(); ++it) {
-//		if (it->first == name) {
-//			return true;
-//		}
-//	}
-//	return false;
+	return false;
 }
 
 string Server::listResponse(string name) {
@@ -414,7 +407,6 @@ string Server::get_request(int client) {
 	int nread = -1;
 	// read until we get a newline
 
-	//sem_wait(&requestLock);
 	while (request.find("\n") == string::npos) {
 		nread = recv(client, buf_, 1024, 0);
 		if (nread < 0) {
@@ -423,17 +415,14 @@ string Server::get_request(int client) {
 				continue;
 			else
 				// an error occurred, so break out
-				//sem_post(&requestLock);
 				return "";
 		} else if (nread == 0) {
 			// the socket is closed
-			//sem_post(&requestLock);
 			return "";
 		}
 		// be sure to use append in case we have binary data
 		request.append(buf_, nread);
 	}
-	//sem_post(&requestLock);
 
 	// a better server would cut off anything after the newline and
 	// save it in a cache
@@ -454,11 +443,9 @@ string Server::get_request(int client) {
 						continue;
 					else
 						// an error occurred, so break out
-						sem_post(&requestLock);
-					return "";
+						return "";
 				} else if (nread == 0) {
 					// the socket is closed
-					sem_post(&requestLock);
 					return "";
 				}
 				// be sure to use append in case we have binary data
@@ -476,9 +463,6 @@ string Server::get_request(int client) {
 }
 
 int Server::determineLength(string line) {
-
-	//size_t index = line.find(" ");
-
 	size_t index = readToSentinel(' ', line);
 	string command = line.substr(0, index);
 

@@ -1,17 +1,16 @@
 CXX=			g++ $(CCFLAGS)
 
-SERVERMAIN	=	serverMain.o Server.o Message.o Buffer.o
+SERVERMAIN	=	serverMain.o Server.o Message.o
 CLIENTMAIN	=	clientMain.o Client.o
 SERVER		=	Server.o
 CLIENT		= 	Client.o
 MESSAGE		=	Message.o
-BUFFER		=	Buffer.o
 
 OBJS 		=	$(SERVERMAIN) $(CLIENTMAIN) 
 
-LIBS=	
+LIBS=
 
-CCFLAGS= -g -pthread
+CCFLAGS= -g
 
 all:	msgd msg
 
