@@ -1,11 +1,12 @@
 CXX=			g++ $(CCFLAGS)
 
-SERVERMAIN	=	serverMain.o Server.o Message.o Buffer.o
+SERVERMAIN	=	serverMain.o Server.o Message.o Buffer.o Handler.o
 CLIENTMAIN	=	clientMain.o Client.o
 SERVER		=	Server.o
 CLIENT		= 	Client.o
 MESSAGE		=	Message.o
 BUFFER		=	Buffer.o
+HANDLER		=	Handler.o
 
 OBJS 		=	$(SERVERMAIN) $(CLIENTMAIN) 
 
