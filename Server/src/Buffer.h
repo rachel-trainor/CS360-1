@@ -27,8 +27,6 @@ public:
 	queue<int> buff; //queue of clients
 
 private:
-
-	//queue<pthread_t*> buff;
 	sem_t lock,numClients,emptySpots;
 };
 

@@ -14,7 +14,6 @@ Buffer::Buffer() {
 }
 
 Buffer::~Buffer() {
-	// TODO Auto-generated destructor stub
 }
 
 void Buffer::append(int client) {
