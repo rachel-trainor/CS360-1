@@ -22,6 +22,8 @@ directory where the downloads will be stored'''
         args = parser.parse_args()
         self.in_file = args.input
         self.dir = args.dir
+
+        print "dir = ", self.dir
         if not os.path.exists(self.dir):
             os.makedirs(self.dir)
 
@@ -38,7 +40,12 @@ directory where the downloads will be stored'''
         # create a thread for each url
         threads = []
         for f,url in zip(files,urls):
+            print "printing f: ", f
+            filename = self.dir + '/'
+            print "filename minus the f = ", filename
             filename = self.dir + '/' + f
+            print "filename = ", filename
+
             d = DownThread(url,filename)
             threads.append(d)
         for t in threads:

@@ -33,9 +33,9 @@ data-fouc-class-names="swift-loading"><!--<![endif]-->
 
 <link rel="search" type="application/opensearchdescription+xml" href="/opensearch.xml" title="Twitter">
 
-      <link rel="stylesheet" href="https://abs.twimg.com/a/1381319844/t1/css/t1_core_logged_out.bundle.css" type="text/css">
+      <link rel="stylesheet" href="https://abs.twimg.com/a/1381432172/t1/css/t1_core_logged_out.bundle.css" type="text/css">
 
-    <link rel="stylesheet" href="https://abs.twimg.com/a/1381319844/t1/css/t1_more.bundle.css" type="text/css">
+    <link rel="stylesheet" href="https://abs.twimg.com/a/1381432172/t1/css/t1_more.bundle.css" type="text/css">
 
     
   
@@ -207,7 +207,7 @@ c.target.hostname.match(a)?!1:!0}var a=/^([^\.]+\.)*twitter.com$/,b=/^key/,c=["c
                 <form action="/sessions/change_locale" class="language" method="POST">
                   <input type="hidden" name="lang">
                   <input type="hidden" name="redirect">
-                  <input type="hidden" name="authenticity_token" value="3390abde3c1450cb4243fc56156cd402d3976690">
+                  <input type="hidden" name="authenticity_token" value="3dc5d3afbf306ab884b25dd23a617ff5b6b22339">
                 </form>
               </div>
             </li>
@@ -251,7 +251,7 @@ c.target.hostname.match(a)?!1:!0}var a=/^([^\.]+\.)*twitter.com$/,b=/^key/,c=["c
 
 <input type="hidden" name="scribe_log">
 <input type="hidden" name="redirect_after_login" value="/">
-<input type="hidden" value="3390abde3c1450cb4243fc56156cd402d3976690" name="authenticity_token"/>
+<input type="hidden" value="3dc5d3afbf306ab884b25dd23a617ff5b6b22339" name="authenticity_token"/>
 
   </fieldset>
   <div class="divider"></div>
@@ -349,7 +349,7 @@ c.target.hostname.match(a)?!1:!0}var a=/^([^\.]+\.)*twitter.com$/,b=/^key/,c=["c
 
     <input type="hidden" name="scribe_log">
     <input type="hidden" name="redirect_after_login" value="/">
-    <input type="hidden" value="3390abde3c1450cb4243fc56156cd402d3976690" name="authenticity_token">
+    <input type="hidden" value="3dc5d3afbf306ab884b25dd23a617ff5b6b22339" name="authenticity_token">
   </form>
 </div>
   <div class="front-signup js-front-signup">
@@ -370,7 +370,7 @@ c.target.hostname.match(a)?!1:!0}var a=/^([^\.]+\.)*twitter.com$/,b=/^key/,c=["c
     </div>
 
     <input type="hidden" value="" name="context">
-    <input type="hidden" value="3390abde3c1450cb4243fc56156cd402d3976690" name="authenticity_token">
+    <input type="hidden" value="3dc5d3afbf306ab884b25dd23a617ff5b6b22339" name="authenticity_token">
     <button type="submit" class="btn signup-btn">
       Sign up for Twitter
     </button>
@@ -934,7 +934,7 @@ c.target.hostname.match(a)?!1:!0}var a=/^([^\.]+\.)*twitter.com$/,b=/^key/,c=["c
     <span class="holder">Password</span>
   </div>
   <input type="hidden" value="" name="context">
-  <input type="hidden" value="3390abde3c1450cb4243fc56156cd402d3976690" name="authenticity_token"/>
+  <input type="hidden" value="3dc5d3afbf306ab884b25dd23a617ff5b6b22339" name="authenticity_token"/>
   <input name="follows" type="hidden" value="">
   <input type="submit" class="btn signup-btn js-submit js-signup-btn" value="Sign up">
 </form>
@@ -956,7 +956,7 @@ c.target.hostname.match(a)?!1:!0}var a=/^([^\.]+\.)*twitter.com$/,b=/^key/,c=["c
     <p class="help-text-inline">Forgot your <a href="/account/resend_password">password</a>?</p>
   </div>
 
-  <input type="hidden" value="3390abde3c1450cb4243fc56156cd402d3976690" name="authenticity_token"/>
+  <input type="hidden" value="3dc5d3afbf306ab884b25dd23a617ff5b6b22339" name="authenticity_token"/>
 
 </fieldset>
 
@@ -964,7 +964,7 @@ c.target.hostname.match(a)?!1:!0}var a=/^([^\.]+\.)*twitter.com$/,b=/^key/,c=["c
 
   <input type="hidden" name="scribe_log">
   <input type="hidden" name="redirect_after_login" value="/">
-  <input type="hidden" value="3390abde3c1450cb4243fc56156cd402d3976690" name="authenticity_token"/>
+  <input type="hidden" value="3dc5d3afbf306ab884b25dd23a617ff5b6b22339" name="authenticity_token"/>
   <button type="submit" class="submit btn primary-btn">Sign in</button>
 
   <fieldset class="subchck">
@@ -1086,7 +1086,7 @@ c.target.hostname.match(a)?!1:!0}var a=/^([^\.]+\.)*twitter.com$/,b=/^key/,c=["c
     <div id="spoonbill-outer"></div>
   </body>
 </html>
-  <input type="hidden" id="init-data" class="json-data" value="{&quot;profileHoversEnabled&quot;:false,&quot;noNewDedup&quot;:false,&quot;dmTopNavEnabled&quot;:false,&quot;baseFoucClass&quot;:&quot;swift-loading&quot;,&quot;htmlFoucClassNames&quot;:&quot;swift-loading&quot;,&quot;htmlClassNames&quot;:&quot;&quot;,&quot;macawSwift&quot;:true,&quot;assetsBasePath&quot;:&quot;https:\/\/abs.twimg.com\/a\/1381319844\/&quot;,&quot;environment&quot;:&quot;production&quot;,&quot;sandboxes&quot;:{&quot;jsonp&quot;:&quot;https:\/\/abs.twimg.com\/a\/1381319844\/jsonp_sandbox.html&quot;,&quot;detailsPane&quot;:&quot;https:\/\/abs.twimg.com\/a\/1381319844\/details_pane_content_sandbox.html&quot;},&quot;formAuthenticityToken&quot;:&quot;3390abde3c1450cb4243fc56156cd402d3976690&quot;,&quot;loggedIn&quot;:false,&quot;screenName&quot;:null,&quot;userId&quot;:null,&quot;scribeBufferSize&quot;:3,&quot;pageName&quot;:&quot;front&quot;,&quot;sectionName&quot;:&quot;front&quot;,&quot;scribeParameters&quot;:{},&quot;internalReferer&quot;:null,&quot;experiments&quot;:{},&quot;geoEnabled&quot;:false,&quot;typeaheadData&quot;:{&quot;accounts&quot;:{&quot;localQueriesEnabled&quot;:false,&quot;remoteQueriesEnabled&quot;:false,&quot;enabled&quot;:false,&quot;limit&quot;:6},&quot;trendLocations&quot;:{&quot;enabled&quot;:false},&quot;savedSearches&quot;:{&quot;enabled&quot;:false,&quot;items&quot;:[]},&quot;dmAccounts&quot;:{&quot;enabled&quot;:false,&quot;localQueriesEnabled&quot;:false,&quot;onlyDMable&quot;:true,&quot;remoteQueriesEnabled&quot;:false},&quot;topics&quot;:{&quot;enabled&quot;:false,&quot;localQueriesEnabled&quot;:false,&quot;prefetchLimit&quot;:500,&quot;remoteQueriesEnabled&quot;:false,&quot;limit&quot;:4},&quot;recentSearches&quot;:{&quot;enabled&quot;:false},&quot;contextHelpers&quot;:{&quot;enabled&quot;:false,&quot;page_name&quot;:&quot;front&quot;,&quot;section_name&quot;:&quot;front&quot;,&quot;screen_name&quot;:null},&quot;hashtags&quot;:{&quot;enabled&quot;:false,&quot;localQueriesEnabled&quot;:false,&quot;prefetchLimit&quot;:500,&quot;remoteQueriesEnabled&quot;:false},&quot;showSearchAccountSocialContext&quot;:false,&quot;showTypeaheadTopicSocialContext&quot;:false,&quot;showDebugInfo&quot;:false,&quot;useThrottle&quot;:true,&quot;accountsOnTop&quot;:false,&quot;remoteDebounceInterval&quot;:300,&quot;remoteThrottleInterval&quot;:300,&quot;tweetContextEnabled&quot;:false,&quot;fullNameMatchingInCompose&quot;:true},&quot;pushStatePageLimit&quot;:500000,&quot;routes&quot;:{&quot;profile&quot;:&quot;\/&quot;},&quot;pushState&quot;:true,&quot;viewContainer&quot;:&quot;#page-container&quot;,&quot;asyncSocialProof&quot;:true,&quot;dragAndDropPhotoUpload&quot;:true,&quot;href&quot;:&quot;\/&quot;,&quot;searchPathWithQuery&quot;:&quot;\/search?q=query&amp;src=typd&quot;,&quot;timelineCardsGallery&quot;:true,&quot;mediaGrid&quot;:true,&quot;deciders&quot;:{&quot;oembed_use_macaw_syndication&quot;:true,&quot;preserve_scroll_position&quot;:false,&quot;pushState&quot;:true,&quot;disable_profile_popup&quot;:false,&quot;hqImageUploads&quot;:false,&quot;mqImageUploads&quot;:false},&quot;permalinkCardsGallery&quot;:false,&quot;notifications_dm&quot;:false,&quot;notifications_spoonbill&quot;:false,&quot;notifications_timeline&quot;:false,&quot;notifications_dm_poll_scale&quot;:60,&quot;lifelineAlertEnabled&quot;:false,&quot;freezeDashboard&quot;:false,&quot;initialState&quot;:{&quot;title&quot;:&quot;Twitter&quot;,&quot;section&quot;:null,&quot;module&quot;:&quot;app\/pages\/frontpage&quot;,&quot;cache_ttl&quot;:300,&quot;body_class_names&quot;:&quot;t1 logged-out mobile-callout front-page &quot;,&quot;doc_class_names&quot;:null,&quot;route_name&quot;:&quot;&quot;,&quot;page_container_class_names&quot;:&quot; wrapper-front white&quot;,&quot;ttft_navigation&quot;:false}}">
+  <input type="hidden" id="init-data" class="json-data" value="{&quot;profileHoversEnabled&quot;:false,&quot;noNewDedup&quot;:false,&quot;dmTopNavEnabled&quot;:false,&quot;baseFoucClass&quot;:&quot;swift-loading&quot;,&quot;htmlFoucClassNames&quot;:&quot;swift-loading&quot;,&quot;htmlClassNames&quot;:&quot;&quot;,&quot;macawSwift&quot;:true,&quot;assetsBasePath&quot;:&quot;https:\/\/abs.twimg.com\/a\/1381432172\/&quot;,&quot;environment&quot;:&quot;production&quot;,&quot;sandboxes&quot;:{&quot;jsonp&quot;:&quot;https:\/\/abs.twimg.com\/a\/1381432172\/jsonp_sandbox.html&quot;,&quot;detailsPane&quot;:&quot;https:\/\/abs.twimg.com\/a\/1381432172\/details_pane_content_sandbox.html&quot;},&quot;formAuthenticityToken&quot;:&quot;3dc5d3afbf306ab884b25dd23a617ff5b6b22339&quot;,&quot;loggedIn&quot;:false,&quot;screenName&quot;:null,&quot;userId&quot;:null,&quot;scribeBufferSize&quot;:3,&quot;pageName&quot;:&quot;front&quot;,&quot;sectionName&quot;:&quot;front&quot;,&quot;scribeParameters&quot;:{},&quot;internalReferer&quot;:null,&quot;experiments&quot;:{},&quot;geoEnabled&quot;:false,&quot;typeaheadData&quot;:{&quot;accounts&quot;:{&quot;localQueriesEnabled&quot;:false,&quot;remoteQueriesEnabled&quot;:false,&quot;enabled&quot;:false,&quot;limit&quot;:6},&quot;trendLocations&quot;:{&quot;enabled&quot;:false},&quot;savedSearches&quot;:{&quot;enabled&quot;:false,&quot;items&quot;:[]},&quot;dmAccounts&quot;:{&quot;enabled&quot;:false,&quot;localQueriesEnabled&quot;:false,&quot;onlyDMable&quot;:true,&quot;remoteQueriesEnabled&quot;:false},&quot;topics&quot;:{&quot;enabled&quot;:false,&quot;localQueriesEnabled&quot;:false,&quot;prefetchLimit&quot;:500,&quot;remoteQueriesEnabled&quot;:false,&quot;limit&quot;:4},&quot;recentSearches&quot;:{&quot;enabled&quot;:false},&quot;contextHelpers&quot;:{&quot;enabled&quot;:false,&quot;page_name&quot;:&quot;front&quot;,&quot;section_name&quot;:&quot;front&quot;,&quot;screen_name&quot;:null},&quot;hashtags&quot;:{&quot;enabled&quot;:false,&quot;localQueriesEnabled&quot;:false,&quot;prefetchLimit&quot;:500,&quot;remoteQueriesEnabled&quot;:false},&quot;showSearchAccountSocialContext&quot;:false,&quot;showTypeaheadTopicSocialContext&quot;:false,&quot;showDebugInfo&quot;:false,&quot;useThrottle&quot;:true,&quot;accountsOnTop&quot;:false,&quot;remoteDebounceInterval&quot;:300,&quot;remoteThrottleInterval&quot;:300,&quot;tweetContextEnabled&quot;:false,&quot;fullNameMatchingInCompose&quot;:true},&quot;pushStatePageLimit&quot;:500000,&quot;routes&quot;:{&quot;profile&quot;:&quot;\/&quot;},&quot;pushState&quot;:true,&quot;viewContainer&quot;:&quot;#page-container&quot;,&quot;asyncSocialProof&quot;:true,&quot;dragAndDropPhotoUpload&quot;:true,&quot;href&quot;:&quot;\/&quot;,&quot;searchPathWithQuery&quot;:&quot;\/search?q=query&amp;src=typd&quot;,&quot;timelineCardsGallery&quot;:true,&quot;mediaGrid&quot;:true,&quot;deciders&quot;:{&quot;oembed_use_macaw_syndication&quot;:true,&quot;preserve_scroll_position&quot;:false,&quot;pushState&quot;:true,&quot;disable_profile_popup&quot;:false,&quot;hqImageUploads&quot;:false,&quot;mqImageUploads&quot;:false},&quot;permalinkCardsGallery&quot;:false,&quot;notifications_dm&quot;:false,&quot;notifications_spoonbill&quot;:false,&quot;notifications_timeline&quot;:false,&quot;notifications_dm_poll_scale&quot;:60,&quot;lifelineAlertEnabled&quot;:false,&quot;freezeDashboard&quot;:false,&quot;initialState&quot;:{&quot;title&quot;:&quot;Twitter&quot;,&quot;section&quot;:null,&quot;module&quot;:&quot;app\/pages\/frontpage&quot;,&quot;cache_ttl&quot;:300,&quot;body_class_names&quot;:&quot;t1 logged-out mobile-callout front-page &quot;,&quot;doc_class_names&quot;:null,&quot;route_name&quot;:&quot;&quot;,&quot;page_container_class_names&quot;:&quot; wrapper-front white&quot;,&quot;ttft_navigation&quot;:false}}">
     <input type="hidden" class="swift-boot-module" value="app/pages/frontpage">
   <input type="hidden" id="swift-module-path" value="https://abs.twimg.com/c/swift/en">
 

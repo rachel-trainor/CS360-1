@@ -13,6 +13,7 @@ class DownloadAccelerator:
 
         self.threads = 1
         self.url = 'http://www.google.com'
+        self.dir = None
 
         self.parse_arguments()
 
@@ -35,6 +36,12 @@ class DownloadAccelerator:
         args = parser.parse_args()
         self.threads = args.threads
         self.url = args.URL
+        self.dir = "downloads"
+        self.filename = self.dir + '/' + self.url.split('/')[-1].strip()
+        print self.filename
+
+        if not os.path.exists(self.dir):
+            os.makedirs(self.dir)
 
     def download(self):
         '''download the file using the specified number of threads'''
@@ -59,9 +66,25 @@ class DownloadAccelerator:
         sys.stdout.write('\n')
 
         threads = []
+        start = 0
+        end = 0
 
         for i in range (0,self.threads):
-            d = DownThread()
+            if(i == 0):
+                start = i*num_bytes
+            else:
+                start = (i*num_bytes)+i
+
+            if(i < self.threads-1):
+                end = start + num_bytes
+                print "start: ", start, " end: ", end
+
+            else:
+                print "last thread range: "
+                end = int(content_length)
+                print "start: ", start, " end: ", end
+
+            d = DownThread(start, end, self.url)
             threads.append(d)
 
         for t in threads:
@@ -69,20 +92,27 @@ class DownloadAccelerator:
 
         for t in threads:
             t.join()
+            with open(self.filename, 'wb') as f:
+                f.write(t.file_contents)
 
 class DownThread(threading.Thread):
-    def __init__(self):
-        #self.url = url
-        #self.num_bytes = bytes
-        self.byte_range = None
+    def __init__(self, start, end, url):
+        self.url = url
+        self.num_bytes = end - start
+        self.start_range = start
+        self.end_range = end
         self.file_contents = None
         threading.Thread.__init__(self)
         self._content_consumed = False
 
+        print self.start_range, " ", self.end_range
+
     def run(self):
         print self.getName(), "reporting for duty"
-
-
+        r = requests.get(self.url, headers={'Range': 'bytes=%d - %d' %(self.start_range, self.end_range)})
+        #print r.headers   
+        self.file_contents = r.content
+        #r = requests.get('http://www.stackoverflow.com', headers={'Range': 'bytes=0-1000'})
 
 if __name__ == '__main__':
     d = DownloadAccelerator()
