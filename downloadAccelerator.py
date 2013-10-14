@@ -3,6 +3,7 @@ import argparse
 import os
 import requests
 import threading
+import time
 
 '''Download one file using different numbers of threads'''
 class DownloadAccelerator:
@@ -17,14 +18,14 @@ class DownloadAccelerator:
 
         self.parse_arguments()
 
-        sys.stdout.write("Threads: %s" % self.threads)
-        sys.stdout.write('\n')
-        sys.stdout.write("URL: %s" % self.url)
-        sys.stdout.write('\n')
-        sys.stdout.write(self.url)
-        sys.stdout.write('\n')
-        sys.stdout.write(self.url.split('/')[-1].strip())
-        sys.stdout.write('\n')
+        # sys.stdout.write("Threads: %s" % self.threads)
+        # sys.stdout.write('\n')
+        # sys.stdout.write("URL: %s" % self.url)
+        # sys.stdout.write('\n')
+        # sys.stdout.write(self.url)
+        # sys.stdout.write('\n')
+        # sys.stdout.write(self.url.split('/')[-1].strip())
+        # sys.stdout.write('\n')
 
     def parse_arguments(self):
         parser = argparse.ArgumentParser(prog = 'DownloadAccelerator', 
@@ -38,7 +39,8 @@ class DownloadAccelerator:
         self.url = args.URL
         self.dir = "downloads"
         self.filename = self.dir + '/' + self.url.split('/')[-1].strip()
-        print self.filename
+
+        #print "filename = " + self.filename
 
         if not os.path.exists(self.dir):
             os.makedirs(self.dir)
@@ -51,19 +53,24 @@ class DownloadAccelerator:
         # sys.stdout.write('\n')
 
         #r = requests.get('http://www.stackoverflow.com')
-        r = requests.get('http://www.stackoverflow.com', headers={'Range': 'bytes=0-1000'})
-        print r
-        print r.headers
+        #r = requests.get('http://www.stackoverflow.com', headers={'Range': 'bytes=0-1000'})
+
+        r = requests.head(self.url)#, headers={'Range': 'bytes=0-1000'})
+        # print r
+        # print r.headers
+
         #r = requests.get('https://cs360.byu.edu')
         #self.url)#, headers={'Range': 'bytes=0-1000'})
+
         content_length = r.headers['content-length']
-        sys.stdout.write('\n')
-        sys.stdout.write("content length: %s \n" %content_length)
-        sys.stdout.write('\n')
+
+        # sys.stdout.write('\n')
+        # sys.stdout.write("content length: %s \n" %content_length)
+        # sys.stdout.write('\n')
 
         num_bytes = int(content_length)/self.threads
-        sys.stdout.write("num_bytes: %s \n" %num_bytes)
-        sys.stdout.write('\n')
+        # sys.stdout.write("num_bytes: %s \n" %num_bytes)
+        # sys.stdout.write('\n')
 
         threads = []
         start = 0
@@ -77,15 +84,17 @@ class DownloadAccelerator:
 
             if(i < self.threads-1):
                 end = start + num_bytes
-                print "start: ", start, " end: ", end
+                #print "start: ", start, " end: ", end
 
             else:
-                print "last thread range: "
+                #print "last thread range: "
                 end = int(content_length)
-                print "start: ", start, " end: ", end
+                #print "start: ", start, " end: ", end
 
             d = DownThread(start, end, self.url)
             threads.append(d)
+
+        firstTime = time.time()
 
         for t in threads:
             t.start()
@@ -94,6 +103,14 @@ class DownloadAccelerator:
             t.join()
             with open(self.filename, 'wb') as f:
                 f.write(t.file_contents)
+                
+        elapsed = (time.time() - firstTime)
+        #print elapsed
+
+        sys.stdout.write(self.url + " ")
+        sys.stdout.write("%d " % self.threads)
+        sys.stdout.write(content_length + " ")
+        sys.stdout.write("%s " % elapsed + "\n")
 
 class DownThread(threading.Thread):
     def __init__(self, start, end, url):
@@ -105,12 +122,14 @@ class DownThread(threading.Thread):
         threading.Thread.__init__(self)
         self._content_consumed = False
 
-        print self.start_range, " ", self.end_range
+        #print self.getName(), self.start_range, " ", self.end_range
 
     def run(self):
-        print self.getName(), "reporting for duty"
-        r = requests.get(self.url, headers={'Range': 'bytes=%d - %d' %(self.start_range, self.end_range)})
-        #print r.headers   
+        #print self.getName(), "reporting for duty"
+        #print self.getName(), self.start_range, self.end_range
+        #print 'bytes=%d-%d' %(self.start_range, self.end_range)
+        r = requests.get(self.url, headers={'Range': 'bytes=%d-%d' %(self.start_range, self.end_range)})
+        #print r.headers['content-range']
         self.file_contents = r.content
         #r = requests.get('http://www.stackoverflow.com', headers={'Range': 'bytes=0-1000'})
 

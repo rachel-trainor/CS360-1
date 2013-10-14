@@ -19,14 +19,12 @@ class Plotter:
 # open file
         f = open(filename)
         for line in f.readlines():
-            #sys.stdout.write(line)
 # skip lines starting with a comment character
             if line.startswith("#"):
                 continue
 # try parsing the line
             try:
                 url,threads,size,seconds = line.split()
-                sys.stdout.write(url, threads, size, seconds)
             except:
                 continue
 # convert to proper data types
