@@ -14,6 +14,7 @@ class Poller:
         self.hosts = {}
         self.media = {}
         self.parameters = {}
+        self.cache = {}
         self.timeout = 1
         self.size = 10000
         self.debug = False
@@ -36,7 +37,7 @@ class Poller:
             sys.exit(1)
 
     def readConf(self):
-        print "configFile: ", self.configFile
+        print "\nconfigFile: ", self.configFile
 
         f = open(self.configFile, 'r')
 
@@ -76,7 +77,7 @@ class Poller:
 
     def run(self):
 
-        print "begin run()"
+        print "\nbegin run()"
 
         """ Use poll() to handle each incoming client."""
         self.poller = select.epoll()
@@ -85,7 +86,9 @@ class Poller:
         while True:
             # poll sockets
             try:
+                print "going to sleep"
                 fds = self.poller.poll(timeout=int(self.timeout))
+                print "waking up"
             except:
                 return
             for (fd,event) in fds:
@@ -103,6 +106,8 @@ class Poller:
         print "end run()"
 
     def handleError(self,fd):
+        print "\nIn handleError()"
+
         self.poller.unregister(fd)
         if fd == self.server.fileno():
             # recreate server socket
@@ -113,29 +118,50 @@ class Poller:
             # close the socket
             self.clients[fd].close()
             del self.clients[fd]
+            del self.cache[fd]
 
     def handleServer(self):
+        print "\nIn handleServer()"
+
         (client,address) = self.server.accept()
         client.setblocking(0) #for non blocking i/o on a client socket
         self.clients[client.fileno()] = client
         self.poller.register(client.fileno(),self.pollmask)
 
     def handleClient(self,fd):
+        print "\nIn handleClient()"
+
         while True:
             try:
                 data = self.clients[fd].recv(self.size)
-                if data:
-                    #store part of message in cache??
-                    response = self.parseRequest(data)
-                    self.clients[fd].send(response)
+
+                print "data from recv: \n", data, "\n"
+
+                if fd in self.cache:
+                    self.cache[fd] += data
                 else:
+                    self.cache[fd] = data
+
+                if data: #(check if data is complete rather than just any data)
+                    dataSplit = data.split('\r\n')
+                    print "\ndataSplit: ", dataSplit
+                    print "\ndataSplit[-1]", dataSplit[-1], "length: ", len(dataSplit[-1])
+                    print "\ndataSplit[-2]", dataSplit[-2], "length: ", len(dataSplit[-2])
+                    (response, path) = self.parseRequest(data)
+                    #self.clients[fd].send(response)
+                    self.sendResponse(fd, response, path)
+                    break
+                else:
+                    print "\nremoving file descriptor: ", self.clients[fd]
                     self.poller.unregister(fd)
                     self.clients[fd].close()
                     del self.clients[fd]
+                    del self.cache[fd]
             except socket.error, e:
                 if e.args[0] == errno.EWOULDBLOCK or e.args[0] == errno.EAGAIN:
-                    print "EWOULDBLOCK or EAGAIN"
-                    break
+                    print "\nEWOULDBLOCK or EAGAIN in handleClient()"
+                    #break
+                    continue
 
         # data = self.clients[fd].recv(self.size)
         # if data:
@@ -148,8 +174,43 @@ class Poller:
         #     del self.clients[fd]
 
 
+    def sendResponse(self, fd, response, path):
+        print "\nIn sendResponse()"
+
+        while True:
+            try:
+                self.clients[fd].send(response)
+                break
+            except socket.error, e:
+                if e.args[0] == errno.EWOULDBLOCK or e.args[0] == errno.EAGAIN:
+                    print "EWOULDBLOCK or EAGAIN in sendFile() 1"
+                    #break
+                    continue
+
+
+        f = open(path, 'rb')
+        stuffRead = f.read(self.size)
+
+        print "\nstuff read: ", "\n", stuffRead, "\n"
+
+        totalsent = 0
+
+        while totalsent < len(stuffRead):
+            try:
+                s = self.clients[fd].send(stuffRead[totalsent:])
+                print "s: \n", s
+            except socket.error, e:
+                if e.args[0] == errno.EWOULDBLOCK or e.args[0] == errno.EAGAIN:
+                    print "EWOULDBLOCK or EAGAIN in sendFile() 2"
+                    #break
+                    continue
+            totalsent += s
+            print "totalsent: \n", totalsent
+
+        print "Exit sendResponse()"
+
     def parseRequest(self,data):
-        print "start parseRequest()"
+        print "\nstart parseRequest()"
         print "data: ", data
 
         data = data.split()
@@ -165,38 +226,39 @@ class Poller:
                 url = '/index.html'
             version = data[2]
             if version != 'HTTP/1.1':
-                print "here 1"
+                print "\nhere 1"
                 response = self.createError(400) #bad request
             else:
                 host = data[4]
                 if 'host' not in self.hosts:
                     if 'default' not in self.hosts:
-                        print "here 2"
+                        print "\nhere 2"
                         response = self.createError(400) #bad request
                     else:
                         #use default host
                         path = self.hosts['default']
-                        print "path: ", path
+                        print "\npath: ", path
                         path = path + url
                         print "path + url: ", path
                         response = self.createResponse(path)
                 else:
                     #use host given
                     path = self.hosts[host]
-                    print "path: ", path
+                    print "\npath: ", path
                     path = path + url
                     print "path + url: ", path
                     response = self.createResponse(path)
 
         print "Response: ", response
-        return response
+        print "end response"
+        return response, path  #make sure path is ok
 
     def createError(self, errNum):
-        print "entered createError()", errNum
+        print "\nentered createError()", errNum
 
 
     def createResponse(self, path):
-        print "entered createResponse()"
+        print "\nentered createResponse()"
 
         t = time.time()
         currTime = self.get_time(t)
@@ -216,6 +278,7 @@ class Poller:
         response += 'Content-Type: ' + filetype + '\r\n'
         response += 'Content-Length: ' + str(os.stat(path).st_size) + '\r\n'
         response += 'Last-Modified: ' + self.get_time(os.stat(path).st_mtime) + '\r\n'
+        response += '\r\n'
 
         print "path.split", path.split('.')[-1]
         print "Response: ", response
