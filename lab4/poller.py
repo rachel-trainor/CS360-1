@@ -4,6 +4,8 @@ import sys
 import time
 import os
 import errno
+import re
+import stat
 
 class Poller:
     """ Polling server """
@@ -15,6 +17,7 @@ class Poller:
         self.media = {}
         self.parameters = {}
         self.cache = {}
+        self.validRequests = ["GET", "POST", "DELETE", "HEAD", "PUT"]
         self.timeout = 1
         self.size = 10000
         self.debug = False
@@ -135,7 +138,7 @@ class Poller:
             try:
                 data = self.clients[fd].recv(self.size)
 
-                print "data from recv: \n", data, "\n"
+                #print "data from recv: \n", data, "\n"
 
                 if fd in self.cache:
                     self.cache[fd] += data
@@ -148,6 +151,7 @@ class Poller:
                     print "\ndataSplit[-1]", dataSplit[-1], "length: ", len(dataSplit[-1])
                     print "\ndataSplit[-2]", dataSplit[-2], "length: ", len(dataSplit[-2])
                     (response, path) = self.parseRequest(data)
+                    #check if path is not none
                     #self.clients[fd].send(response)
                     self.sendResponse(fd, response, path)
                     break
@@ -157,11 +161,12 @@ class Poller:
                     self.clients[fd].close()
                     del self.clients[fd]
                     del self.cache[fd]
+                    break
             except socket.error, e:
                 if e.args[0] == errno.EWOULDBLOCK or e.args[0] == errno.EAGAIN:
                     print "\nEWOULDBLOCK or EAGAIN in handleClient()"
-                    #break
-                    continue
+                    break
+                    #continue
 
         # data = self.clients[fd].recv(self.size)
         # if data:
@@ -176,10 +181,14 @@ class Poller:
 
     def sendResponse(self, fd, response, path):
         print "\nIn sendResponse()"
+        #print response
+
+        #if exists
+        #if permission
 
         while True:
             try:
-                self.clients[fd].send(response)
+                self.clients[fd].send(response) # change to send the whole thing
                 break
             except socket.error, e:
                 if e.args[0] == errno.EWOULDBLOCK or e.args[0] == errno.EAGAIN:
@@ -187,25 +196,34 @@ class Poller:
                     #break
                     continue
 
+        split = response.split()
+        print "split = ", split
+        print "split[1] = ", split[1]
 
-        f = open(path, 'rb')
-        stuffRead = f.read(self.size)
+        if path and split[1] == "200":
+            f = open(path, 'rb')
 
-        print "\nstuff read: ", "\n", stuffRead, "\n"
+            while True:
+                stuffRead = f.read(self.size)
+                if not stuffRead:
+                    break
 
-        totalsent = 0
+                #print "\nstuff read: ", "\n", stuffRead, "\n"
 
-        while totalsent < len(stuffRead):
-            try:
-                s = self.clients[fd].send(stuffRead[totalsent:])
-                print "s: \n", s
-            except socket.error, e:
-                if e.args[0] == errno.EWOULDBLOCK or e.args[0] == errno.EAGAIN:
-                    print "EWOULDBLOCK or EAGAIN in sendFile() 2"
-                    #break
-                    continue
-            totalsent += s
-            print "totalsent: \n", totalsent
+                totalsent = 0
+
+                while totalsent < len(stuffRead):
+                    try:
+                        s = self.clients[fd].send(stuffRead[totalsent:]) #change to send the whole thing
+                        print "s: \n", s
+                    except socket.error, e:
+                        if e.args[0] == errno.EWOULDBLOCK or e.args[0] == errno.EAGAIN:
+                            print "EWOULDBLOCK or EAGAIN in sendFile() 2"
+                            #break
+                            continue
+                    totalsent += s
+                    print "totalsent: \n", totalsent
+
 
         print "Exit sendResponse()"
 
@@ -213,83 +231,124 @@ class Poller:
         print "\nstart parseRequest()"
         print "data: ", data
 
-        data = data.split()
-        print data
+        #data = data.split()
+        request = data.split()
+        #print "request: ", request
+        headers = dict(re.findall(r"(?P<name>.*?): (?P<value>.*?)\r\n", data))
+        #print "headers: ", headers
 
         response = None
+        path = None
+        host = None
 
-        if data[0] != 'GET':
-            response = self.createError(501) #not implemented
+        if request[0] not in self.validRequests: #put delete post head
+            response = self.createError("501", "Not Implemented") #not implemented
         else:
-            url = data[1]
+            url = request[1]
             if url == '/':
                 url = '/index.html'
-            version = data[2]
-            if version != 'HTTP/1.1':
-                print "\nhere 1"
-                response = self.createError(400) #bad request
-            else:
-                host = data[4]
-                if 'host' not in self.hosts:
-                    if 'default' not in self.hosts:
-                        print "\nhere 2"
-                        response = self.createError(400) #bad request
-                    else:
-                        #use default host
-                        path = self.hosts['default']
-                        print "\npath: ", path
-                        path = path + url
-                        print "path + url: ", path
-                        response = self.createResponse(path)
+            version = request[2]
+
+            #host = data[4]
+            if 'Host' in headers:
+                host = headers['Host'].split(':')[0]
+                print "\nhost: ", host, "\n"
+
+            if 'host' not in self.hosts:
+                if 'default' not in self.hosts:
+                    print "\nhere 2"
+                    response = self.createError("400", "Bad Request") #bad request
                 else:
-                    #use host given
-                    path = self.hosts[host]
+                    #use default host
+                    path = self.hosts['default']
                     print "\npath: ", path
                     path = path + url
                     print "path + url: ", path
                     response = self.createResponse(path)
+            else:
+                #use host given
+                path = self.hosts[host]
+                print "\npath: ", path
+                path = path + url
+                print "path + url: ", path
+                response = self.createResponse(path)
 
-        print "Response: ", response
+        #print "Response: ", response
         print "end response"
         return response, path  #make sure path is ok
 
-    def createError(self, errNum):
-        print "\nentered createError()", errNum
+    def createError(self, errNum, errMsg):
+        print "\nentered createError()", errNum, errMsg
+        t = time.time()
+        currTime = self.get_time(t)
 
+        htmlErr = '<html> <body> <h1>' + errNum + ' ' + errMsg + '</h1> </body> </html>'
+        print "htmlErr: ", htmlErr
+
+        error = 'HTTP/1.1' + ' ' + errNum + ' ' + errMsg + '\r\n'
+        error += 'Date: ' + currTime + '\r\n'
+        error += 'Server: Apache/2.2.22 (Ubuntu) \r\n'
+        error += 'Content-Type: text/html \r\n'
+        error += 'Content-Length: ' + str(len(htmlErr)) + '\r\n'
+        error += '\r\n'
+        error += htmlErr
+        error += '\r\n'
+        error += '\r\n'
+        return error
 
     def createResponse(self, path):
         print "\nentered createResponse()"
 
-        t = time.time()
-        currTime = self.get_time(t)
-        filetype = path.split('.')[-1]
-        print "filetype: ", filetype
-        print "filetype[0]: ", filetype[0]
-        print "filetype size: ", len(filetype)
+        possibleError = self.verifyPath(path)
 
-        if filetype in self.media:
-            filetype = self.media[filetype]
+        if possibleError == None:
+            t = time.time()
+            currTime = self.get_time(t)
+            filetype = path.split('.')[-1]
+            print "filetype: ", filetype
+            print "filetype[0]: ", filetype[0]
+            print "filetype size: ", len(filetype)
+
+            if filetype in self.media:
+                filetype = self.media[filetype]
+            else:
+                filetype = 'text/plain'
+
+            response = 'HTTP/1.1 200 OK \r\n'
+            response += 'Date: ' + currTime + '\r\n'
+            response += 'Server: Apache/2.2.22 (Ubuntu) \r\n'
+            response += 'Content-Type: ' + filetype + '\r\n'
+            response += 'Content-Length: ' + str(os.stat(path).st_size) + '\r\n'
+            response += 'Last-Modified: ' + self.get_time(os.stat(path).st_mtime) + '\r\n'
+            response += '\r\n'
+
+            print "path.split", path.split('.')[-1]
+            #print "Response: ", response
+
+            return response
         else:
-            filetype = 'text/plain'
-
-        response = 'HTTP/1.1 200 OK \r\n'
-        response += 'Date: ' + currTime + '\r\n'
-        response += 'Server: Apache/2.2.22 (Ubuntu) \r\n'
-        response += 'Content-Type: ' + filetype + '\r\n'
-        response += 'Content-Length: ' + str(os.stat(path).st_size) + '\r\n'
-        response += 'Last-Modified: ' + self.get_time(os.stat(path).st_mtime) + '\r\n'
-        response += '\r\n'
-
-        print "path.split", path.split('.')[-1]
-        print "Response: ", response
-
-        return response
+            return possibleError
 
     def get_time(self, t):
         gmt = time.gmtime(t)
         format = '%a, %d %b %Y %H :%M :%S GMT'
         time_string = time.strftime(format,gmt)
         return time_string
+
+    def verifyPath(self, path):
+        if os.path.isfile(path):
+            print "path is a file"
+            st = os.stat(path)
+            if st.st_mode & stat.S_IRGRP:
+                print "path is group readable"
+                return None
+            else:
+                #don't have read permission
+                return self.createError("403", "Forbidden")
+        else:
+            #file doesn't exist
+            return self.createError("404", "Not Found")
+
 
 
 #  call open() to determine whether you can access the le
