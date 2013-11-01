@@ -18,10 +18,14 @@ class Poller:
         self.parameters = {}
         self.cache = {}
         self.validRequests = ["GET", "POST", "DELETE", "HEAD", "PUT"]
+
+        print self.validRequests
+
         self.timeout = 1
         self.size = 10000
         self.debug = False
-        self.configFile = 'web.conf'
+        self.configFile = 'web-server-testing-master/tests/web.conf'
+        #self.configFile = 'web.conf'
 
         self.open_socket()
         self.readConf()
@@ -56,7 +60,10 @@ class Poller:
                 print line[0]
 
                 if line[0] == "host":
-                    self.hosts[line[1]] = line[2]
+                    path = line[2]
+                    if path[0] != '/': #check if reletive or absolute path
+                        path = os.getcwd() + '/' + path
+                    self.hosts[line[1]] = path
                     print "found host"
 
                 elif line[0] == "media":
@@ -233,45 +240,50 @@ class Poller:
 
         #data = data.split()
         request = data.split()
-        #print "request: ", request
+        print "\nrequest: ", request
         headers = dict(re.findall(r"(?P<name>.*?): (?P<value>.*?)\r\n", data))
-        #print "headers: ", headers
+        print "\nheaders: ", headers
 
         response = None
         path = None
         host = None
 
-        if request[0] not in self.validRequests: #put delete post head
-            response = self.createError("501", "Not Implemented") #not implemented
+        if request[0] not in self.validRequests:#put delete post head
+            print request[0], "is NOT a valid request"
+            response = self.createError("400", "Bad Request") #not implemented
         else:
-            url = request[1]
-            if url == '/':
-                url = '/index.html'
-            version = request[2]
+            if request[0] != 'GET':
+                response = self.createError("501", "Not Implemented")
+            else:
+                url = request[1]
+                if url == '/':
+                    url = '/index.html'
+                version = request[2]
 
-            #host = data[4]
-            if 'Host' in headers:
-                host = headers['Host'].split(':')[0]
-                print "\nhost: ", host, "\n"
+                #host = data[4]
+                if 'Host' in headers:
+                    host = headers['Host'].split(':')[0]
+                    print "\nhost: ", host, "\n"
 
-            if 'host' not in self.hosts:
-                if 'default' not in self.hosts:
-                    print "\nhere 2"
-                    response = self.createError("400", "Bad Request") #bad request
+                if host not in self.hosts:
+                    if 'default' not in self.hosts:
+                        print "\nhere 2"
+                        response = self.createError("400", "Bad Request") #bad request
+                    else:
+                        #use default host
+                        print "using default host"
+                        path = self.hosts['default']
+                        print "\npath: ", path
+                        path = path + url
+                        print "path + url: ", path
+                        response = self.createResponse(path)
                 else:
-                    #use default host
-                    path = self.hosts['default']
+                    #use host given
+                    path = self.hosts[host]
                     print "\npath: ", path
                     path = path + url
                     print "path + url: ", path
                     response = self.createResponse(path)
-            else:
-                #use host given
-                path = self.hosts[host]
-                print "\npath: ", path
-                path = path + url
-                print "path + url: ", path
-                response = self.createResponse(path)
 
         #print "Response: ", response
         print "end response"

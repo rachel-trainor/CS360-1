@@ -17,8 +17,12 @@ class Main:
         ''' parse arguments, which include '-p' for port '''
         parser = argparse.ArgumentParser(prog='Web Server', description='CS 360 Lab 4', add_help=True)
         parser.add_argument('-p', '--port', type=int, action='store', help='port the server will bind to',default=8080)
-        parser.add_argument('-d', action='store_true', help='if specified, will print debug info')        
+        parser.add_argument('-d', '--debug', action='store_true', help='if specified, will print debug info')        
         self.args = parser.parse_args()
+        if self.args.debug:
+            print "debug is on"
+        else:
+            print "debug is off"
 
     def run(self):
         p = Poller(self.args.port)
