@@ -25,7 +25,7 @@ class Main:
             print "debug is off"
 
     def run(self):
-        p = Poller(self.args.port)
+        p = Poller(self.args.port, self.args.debug)
         #p = Poller(self.args.port, self.args.debug)
         p.run()
 
