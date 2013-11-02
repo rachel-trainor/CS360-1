@@ -65,7 +65,7 @@ class Poller:
                         path = os.getcwd() + '/' + path
                     self.hosts[line[1]] = path
 
-                elif line[0] == "media":
+                elif line[0] == "media": 
                     self.media[line[1]] = line[2]
 
                 elif line[0] == "parameter":
@@ -74,6 +74,8 @@ class Poller:
                         self.timeout = line[2]
                 else:
                     print "found something else"
+
+        f.close()
 
         if self.debug:
             print "hosts: \n", self.hosts
@@ -178,23 +180,24 @@ class Poller:
             try:
                 data = self.clients[fd].recv(self.size)
 
-                #print "data from recv: \n", data, "\n"
+                if self.debug:
+                    print "data from recv: \n", data, "\n"
 
                 if fd in self.cache:
                     self.cache[fd] += data
                 else:
                     self.cache[fd] = data
 
-                if data: #(check if data is complete rather than just any data)
+                if data: #data[-1] == '\r\n' and data[-2] == '\r\n': #(check if data is complete rather than just any data)
                     dataSplit = data.split('\r\n')
                     if self.debug:
                         print "\ndataSplit: ", dataSplit
                         print "\ndataSplit[-1]", dataSplit[-1], "length: ", len(dataSplit[-1])
                         print "\ndataSplit[-2]", dataSplit[-2], "length: ", len(dataSplit[-2])
-                    (response, path) = self.parseRequest(data)
+                    (response, path, rangeRequest) = self.parseRequest(data)
                     #check if path is not none
                     #self.clients[fd].send(response)
-                    self.sendResponse(fd, response, path)
+                    self.sendResponse(fd, response, path, rangeRequest)
                     break
                 else:
                     if self.debug:
@@ -223,13 +226,10 @@ class Poller:
         #     del self.clients[fd]
 
 
-    def sendResponse(self, fd, response, path):
+    def sendResponse(self, fd, response, path, rangeRequest):
         if self.debug:
             print "\nIn sendResponse()"
         #print response
-
-        #if exists
-        #if permission
 
         while True:
             try:
@@ -247,6 +247,10 @@ class Poller:
             print "split[1] = ", split[1]
 
         if path and split[1] == "200":
+
+            if rangeRequest != None:
+                self.sendRangeResponse(fd, response, path, rangeRequest)
+
             f = open(path, 'rb')
 
             while True:
@@ -269,9 +273,72 @@ class Poller:
                             continue
                     totalsent += s
                     #print "totalsent: \n", totalsent
+            f.close()
 
         if self.debug:
             print "Exit sendResponse()"
+
+    def sendRangeResponse(self, fd, response, path, rangeRequest):
+        if self.debug:
+            print "begin sendRangeResponse()"
+            print "\nresponse", response
+
+        response = self.editResponse(response)
+
+        rangeRequest = rangeRequest.split('=')
+        rangeRequest = rangeRequest[1].split('-')
+        start = int(rangeRequest[0])
+        end = int(rangeRequest[1])
+        diff = end - start
+
+        f = open(path, 'rb')
+        stuffRead = 0
+
+        while stuffRead < diff:
+            #start reading from the specified start index
+            f.seek(start + stuffRead, 0)
+            diff = diff - stuffRead
+            if diff < self.size:
+                stuffRead = f.read(diff)
+            else:
+                stuffRead = f.read(self.size)
+
+            if not stuffRead:
+                break
+
+            #print "\nstuff read: ", "\n", stuffRead, "\n"
+
+            totalsent = 0
+
+            while totalsent < len(stuffRead):
+                try:
+                    s = self.clients[fd].send(stuffRead[totalsent:]) #change to send the whole thing
+                    #print "s: \n", s
+                except socket.error, e:
+                    if e.args[0] == errno.EWOULDBLOCK or e.args[0] == errno.EAGAIN:
+                        print "EWOULDBLOCK or EAGAIN in sendFile() 2"
+                        #break
+                        continue
+                totalsent += s
+                #print "totalsent: \n", totalsent
+        f.close()
+
+        if self.debug:
+            print "Exit sendRangeResponse()"
+
+    def editResponse(self, response):
+        #change the response to reflect a Partial Message
+        if self.debug:
+            print "in editResponse()"
+
+        response = response.split()
+        print "\nresponse split: ", response
+        response[1] = '206'
+        response[2] = 'Partial Message'
+        response = ' '.join(response)
+        print "\njoined response", response
+
+        return response
 
     def parseRequest(self,data):
         if self.debug:
@@ -286,60 +353,76 @@ class Poller:
             print "\nrequest: ", request
             print "\nheaders: ", headers
 
+        rangeRequest = None
         response = None
         path = None
         host = None
+        returnHeadRequest = False
 
-        if request[0] not in self.validRequests:#put delete post head
+        if 'Range' in headers:
+            rangeRequest = headers['Range']
+            if self.debug:
+                print 'rangeRequest = ', rangeRequest
+
+        if request[0] not in self.validRequests:#put delete post head get
             if self.debug:
                 print request[0], "is NOT a valid request"
-            response = self.createError("400", "Bad Request") #not implemented
+            response = self.createError("400", "Bad Request")
         else:
-            if request[0] != 'GET':
+
+            if request[0] != 'GET' and request[0] != 'HEAD':
                 response = self.createError("501", "Not Implemented")
             else:
+                if request[0] == 'HEAD':
+                    returnHeadRequest = True
                 url = request[1]
-                if url == '/':
-                    url = '/index.html'
-                version = request[2]
-
-                #host = data[4]
-                if 'Host' in headers:
-                    host = headers['Host'].split(':')[0]
+                if url == 'HTTP/1.1':
                     if self.debug:
-                        print "\nhost: ", host, "\n"
+                        print "no url"
+                    response = self.createError("400", "Bad Request")
+                else:
+                    if url == '/':
+                        url = '/index.html'
+                    version = request[2]
 
-                if host not in self.hosts:
-                    if 'default' not in self.hosts:
+                    #host = data[4]
+                    if 'Host' in headers:
+                        host = headers['Host'].split(':')[0]
                         if self.debug:
-                            print "\nhere 2"
-                        response = self.createError("400", "Bad Request") #bad request
+                            print "\nhost: ", host, "\n"
+
+                    if host not in self.hosts:
+                        if 'default' not in self.hosts:
+                            if self.debug:
+                                print "\nhere 2"
+                            response = self.createError("400", "Bad Request") #bad request
+                        else:
+                            #use default host
+                            if self.debug:
+                                print "using default host"
+                            path = self.hosts['default']
+                            if self.debug:
+                                print "\npath: ", path
+                            path = path + url
+                            if self.debug:
+                                print "path + url: ", path
+                            response = self.createResponse(path)
                     else:
-                        #use default host
-                        if self.debug:
-                            print "using default host"
-                        path = self.hosts['default']
+                        #use host given
+                        path = self.hosts[host]
                         if self.debug:
                             print "\npath: ", path
                         path = path + url
                         if self.debug:
                             print "path + url: ", path
                         response = self.createResponse(path)
-                else:
-                    #use host given
-                    path = self.hosts[host]
-                    if self.debug:
-                        print "\npath: ", path
-                    path = path + url
-                    if self.debug:
-                        print "path + url: ", path
-                    response = self.createResponse(path)
-
+        if returnHeadRequest:
+            path = None
         #print "Response: ", response
         if self.debug:
             print "end response"
 
-        return response, path  #make sure path is ok
+        return response, path, rangeRequest  #make sure path is ok
 
     def createError(self, errNum, errMsg):
         if self.debug:
