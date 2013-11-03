@@ -22,12 +22,12 @@ class Tester:
         self.extra = args.extra
 
     def run(self):
-        #self.testHeaders()
-        #self.testPersistent()
-        #self.testBad()
-        #self.testNotFound()
-        #self.testForbidden()
-        #self.testNotImplemented()
+        self.testHeaders()
+        self.testPersistent()
+        self.testBad()
+        self.testNotFound()
+        self.testForbidden()
+        self.testNotImplemented()
         if self.extra:
             self.testRange()
 
@@ -56,9 +56,8 @@ class Tester:
     def testBad(self):
         print "*** Bad Request (400) ***"
         self.open_socket()
-        #self.send("BAD / HTTP/1.1\r\nHost: %s\r\n\r\n" % self.host)
-        #self.get_response([400,405,501])
-
+        self.send("BAD / HTTP/1.1\r\nHost: %s\r\n\r\n" % self.host)
+        self.get_response([400,405,501])
         self.send("GET HTTP/1.1\r\nHost: %s\r\n\r\n" % self.host)
         self.get_response([400])
                 
