@@ -74,10 +74,10 @@ class Poller:
         f.close()
 
         if self.debug:
-            print "hosts: \n", self.hosts
-            print "media: \n", self.media
-            print "parameters: \n", self.parameters
-            print "timeout: ", self.timeout
+            print "\nhosts: \n", self.hosts
+            print "\nmedia: \n", self.media
+            print "\nparameters: \n", self.parameters
+            print "\ntimeout: ", self.timeout
 
 
     def run(self):
@@ -99,8 +99,7 @@ class Poller:
                 return
 
             currentTime = time.time()
-            if self.debug:
-                print "\ncurrentTime = ", currentTime
+            #print "\ncurrentTime = ", currentTime
             for (fd,event) in fds:
                 # handle errors
                 if event & (select.POLLHUP | select.POLLERR):
@@ -112,27 +111,17 @@ class Poller:
                     continue
                 # handle client socket
                 self.lastUsed[fd] = currentTime
-                #if self.debug:
-                #print "\nself.lastUsed:\n", self.lastUsed
                 result = self.handleClient(fd)
 
             now = time.time()
-            #if self.debug:
             #print "\nnow = ", now, "\nlastChecked = ", lastChecked, "\ndiff: ", now-lastChecked
-            if now-lastChecked > self.threshold: #in for loop or outside?
-                #if self.debug:
-                #print "\nnow-lastChecked is greater than threshold ", now-lastChecked
+            if now-lastChecked > self.threshold:
                 toDelete = []
                 for c in self.lastUsed:
-                    #print "\nnow: ", now
-                    # print "\nself.lastUsed[c]: ", self.lastUsed[c]
-                    # print "\nnow - self.lastUsed[c]: ", now - self.lastUsed[c]
-                    # print "\nself.timeout: ", self.timeout
-                    # print "\nnow - self.lastUsed[c] > self.timeout: ", float(now - self.lastUsed[c]) > float(self.timeout)
-                    if float(now - self.lastUsed[c]) > float(self.timeout): # if now - lastUsed[c] > idleTime:
+                    if float(now - self.lastUsed[c]) > float(self.timeout):
                         #close the socket
-                        #print "mark and sweep, closing ", c
-                        #self.closeSocket(c)
+                        if self.debug:
+                            print "mark and sweep, closing ", c
                         toDelete.append(c)
                 for c in toDelete:
                     self.closeSocket(c)
@@ -168,7 +157,6 @@ class Poller:
     def handleServer(self):
         if self.debug:
             print "\nIn handleServer()"
-
         (client,address) = self.server.accept()
         client.setblocking(0) #for non blocking i/o on socket
         self.clients[client.fileno()] = client
@@ -178,12 +166,10 @@ class Poller:
     def handleClient(self,fd):
         if self.debug:
             print "\nIn handleClient()"
-
-        counter = 0
+            
         while True:
             try:
                 data = self.clients[fd].recv(self.size)
-                print "data from recv: \n", data, "\n"
 
                 if self.debug:
                     print "data from recv: \n", data, "\n"
@@ -196,25 +182,18 @@ class Poller:
                 if data:
                     if '\r\n\r\n' in data:  #check if request is complete rather than just any data
                         dataSplit = data.split('\r\n')
-                        if self.debug:
-                            print "\ndataSplit: ", dataSplit
-                            print "\ndataSplit[-1]", dataSplit[-1], "length: ", len(dataSplit[-1])
-                            print "\ndataSplit[-2]", dataSplit[-2], "length: ", len(dataSplit[-2])
                         (response, path, rangeRequest) = self.parseRequest(self.cache[fd])
-                        print response, '\n', path, '\n', rangeRequest, '\n'
                         self.sendResponse(fd, response, path, rangeRequest)
                         del self.cache[fd] # = ''
                         break
                     else:
                         continue
                 else:
-                    counter = counter + 1
-                    if counter > 10:
-                        if self.debug:
-                            print "\nremoving file descriptor: ", self.clients[fd]
-                        self.poller.unregister(fd)
-                        self.closeSocket(fd)
-                        break
+                    if self.debug:
+                        print "\nremoving file descriptor: ", self.clients[fd]
+                    self.poller.unregister(fd)
+                    self.closeSocket(fd)
+                    break
             except socket.error, e:
                 if e.args[0] == errno.EWOULDBLOCK or e.args[0] == errno.EAGAIN:
                     if self.debug:

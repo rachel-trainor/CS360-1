@@ -165,8 +165,8 @@ class RequesterThread(Thread):
         self.uri = uri
         self.duration = duration
         self.identifier = identifier
-        self.failOccurred = False
-        self.failures = []  
+        #self.failOccurred = False
+        #self.failures = []  
                 
     def run(self):
         result = True
@@ -186,24 +186,24 @@ class RequesterThread(Thread):
                 if int(resp.status) != 200:
                     error = '(Status = %d)' % (resp.status)
                     result = False
-                    self.failOccurred = True
-                    self.failures.append(num)
-                    self.failures.append(-1)
+                    # self.failOccurred = True
+                    # self.failures.append(num)
+                    # self.failures.append(-1)
                 else:
                     givenlength = resp.getheader('content-length')
                     mimetype = resp.getheader('content-type')
                     if not givenlength:
                         error = '(No content-length given)'
                         result = False
-                        self.failOccurred = True
-                        self.failures.append(num)
-                        self.failures.append(-2)
+                        # self.failOccurred = True
+                        # self.failures.append(num)
+                        # self.failures.append(-2)
                     elif not givenlength.isdigit():
                         error = '(Invalid content-length)'
                         result = False
-                        self.failOccurred = True
-                        self.failures.append(num)
-                        self.failures.append(-3)
+                        # self.failOccurred = True
+                        # self.failures.append(num)
+                        # self.failures.append(-3)
                     else:
                         givenlength = int(givenlength)
 
@@ -214,9 +214,9 @@ class RequesterThread(Thread):
                                 buflen += len(buf)
                             else:
                                 result = False
-                                self.failOccurred = True
-                                self.failures.append(num)
-                                self.failures.append(-4)
+                                # self.failOccurred = True
+                                # self.failures.append(num)
+                                # self.failures.append(-4)
                                 break
                             if buflen >= givenlength:
                                 break
@@ -224,9 +224,9 @@ class RequesterThread(Thread):
             except:
                 error = sys.exc_info()[1]
                 result = False
-                self.failOccurred = True
-                self.failures.append(-5)
-                self.failures.append(str(num) + " sys.exc_info" + str(error) + "\nGET " + str(self.uri))
+                # self.failOccurred = True
+                # self.failures.append(-5)
+                # self.failures.append(str(num) + " sys.exc_info" + str(error) + "\nGET " + str(self.uri))
             elapsedtime = time.time() - exp_start
             if buflen == 0 or elapsedtime == 0:
                 throughput = 0.00
@@ -263,16 +263,16 @@ class WorkloadGenerator:
             thread.start()
         time.sleep(self.duration)
         print "Waiting for thread termination ..."
-        # for thread in self.threads:
-        #     thread.join()
-        i = -1
         for thread in self.threads:
-            i = i+1
             thread.join()
-            if thread.failOccurred == True:
-                print "Fail Occurred on thread ", i
-                for failure in thread.failures:
-                    print failure, ", "
+        # i = -1
+        # for thread in self.threads:
+        #     i = i+1
+        #     thread.join()
+        #     if thread.failOccurred == True:
+        #         #print "Fail Occurred on thread ", i
+        #         for failure in thread.failures:
+        #             #print failure, ", "
                         
 if __name__ == "__main__":
     parser = optparse.OptionParser(usage="%prog hostname[:port]/file -t [threads] -d [duration]", version="%prog 1.0")
