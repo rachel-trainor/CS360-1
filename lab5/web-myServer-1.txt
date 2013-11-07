@@ -1,0 +1,28 @@
+0 /file001.txt 200 OK 1477 0.003039
+1 /file179.txt 200 OK 1383 0.002917
+2 /file134.txt 200 OK 2484 0.003172
+3 /file223.txt 200 OK 1970 0.003046
+4 /file000.txt 200 OK 1389 0.002819
+5 /file000.txt 200 OK 1389 0.002818
+6 /file672.txt 200 OK 1770 0.003125
+7 /file005.txt 610 <class 'socket.error'>[Errno 104] Connection reset by peer 0 0
+8 /file002.txt 200 OK 1056 0.003024
+9 /file001.txt 200 OK 1477 0.002464
+10 /file060.txt 200 OK 1186 0.003116
+11 /file002.txt 200 OK 1056 0.002736
+12 /file035.txt 200 OK 2066 0.002890
+13 /file255.txt 200 OK 1244 0.003025
+14 /file071.txt 200 OK 1141 0.002791
+15 /file000.txt 200 OK 1389 0.002489
+16 /file183.txt 200 OK 1118 0.002962
+17 /file001.txt 200 OK 1477 0.002777
+18 /file524.txt 200 OK 1046 0.003110
+19 /file015.txt 200 OK 1337 0.002946
+20 /file481.txt 200 OK 1156 0.002891
+21 /file034.txt 200 OK 1434 0.002850
+22 /file053.txt 200 OK 1046 0.003064
+23 /file185.txt 200 OK 2042 0.002873
+24 /file004.txt 610 <class 'socket.error'>[Errno 104] Connection reset by peer 0 0
+25 /file028.txt 200 OK 1892 0.002852
+26 /file335.txt 200 OK 1147 0.002995
+27 /file020.txt 200 OK 1308 0.002955
