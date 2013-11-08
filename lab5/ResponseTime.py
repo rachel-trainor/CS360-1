@@ -39,11 +39,11 @@ class ResponseTime:
 
     		firstTime = time.time()
     		r = requests.get(self.myServer)
-    		print i, " ", r
+    		#print i, " ", r
     		secondTime = time.time()
 
     		r2 = requests.get(self.lighttpd)
-    		print "\n", i, " ", r
+    		#print "\n", i, " ", r
     		thirdTime = time.time()
 
     		myServerElapsed = (secondTime - firstTime)
@@ -135,59 +135,69 @@ class ResponseTime:
             os.system("python generator.py --port %s -l %s -d %s >> %s" % (port, int(load), duration, output))
 
 
-    def boxplot(self, xvalues, yvalues):
+    def boxplot(self, xvalues, yvalues, whichfiles):
         print "\nin boxplot()"
-        #parseFiles("myServer")
-        #parseFiles("light")
         """ Create a graph that includes a line plot and a boxplot. """
         clf()
-        # plot the line
-        #plot(self.x,self.averages)
-        # plot the boxplot
-        boxplot(yvalues,positions=xvalues,widths=0.5)
-        xlabel('X Label (units)')
-        ylabel('Y Label (units)')
-        savefig('combined.png')
+        if whichfiles == "myServer":
+            plot(self.myServerX, self.myServerY)
+        else:
+            plot(self.lighttpdX, self.lighttpdY)
+
+        for i in range(0, len(xvalues)):
+            xlist = xvalues[i]
+            ylist = yvalues[i]
+            boxplot(ylist, positions = xlist, widths = 0.05)
+
+        xlim([0,1])
+        ylim([0,.1])            
+        xlabel('lambda / mu')
+        ylabel('1 / (mu - lambda)')
+        savefig(whichfiles + '-combined.png')
 
         print "\nexit boxplot()"
 
     def parseFiles(self, whichfiles):
         xvalues = []
         yvalues = []
+        filename = None
 
         if whichfiles == "myServer":
-            for currFile in self.myServerLoadFiles:
-                print "currFile = ", currFile
-                try:
-                    f = open(currFile, 'r')
-                    splitName = currFile.split('-')
-                    getLoad = splitName[2]
-                    getLoad = getLoad.split('.')
-                    myLambda = float(getLoad[0])
-                    print "\nmyLambda = ", myLambda
+            filename = self.myServerLoadFiles
+        else:
+            filename = self.lightLoadFiles
 
-                    for line in f.readlines():
-                        split = line.split()
-                        print split
-                        if split[2] == '200':
-                            mu = float(split[5])
-                            xval = myLambda/mu
-                            print "lambda/mu = ", xval
-                            xvalues.append(xval)
-                            yval = 1/(mu - myLambda)
-                            print "yval = ", yval
-                            yvalues.append(yval)
+        for currFile in filename:
+            try:
+                f = open(currFile, 'r')
+                splitName = currFile.split('-')
+                getLoad = splitName[2]
+                getLoad = getLoad.split('.')
+                myLambda = float(getLoad[0])
+                xVal = myLambda/self.myServerMu
 
-                    self.boxplot(xvalues, yvalues)
-                except IOError as e:
-                    print "Error Opening File"
-                    print "i/O error({0}): {1}".format(e.errno, e.strerror)
+                tempX = []
+                tempX.append(xVal)
+                xvalues.append(tempX)
 
+                tempY = []
+                for line in f.readlines():
+                    split = line.split()
+                    if split[2] == '200':
+                        yVal = float(split[5])
+                        tempY.append(yVal)
+                yvalues.append(tempY)
+            except IOError as e:
+                print "Error Opening File"
+                print "i/O error({0}): {1}".format(e.errno, e.strerror)
+
+        self.boxplot(xvalues, yvalues, whichfiles)
 
 if __name__ == '__main__':
     r = ResponseTime()
-    #r.run()
-    #r.writeTimes()
-    #r.linePlot()
+    r.run()
+    r.writeTimes()
+    r.linePlot()
     #r.generateLoadTest()
     r.parseFiles("myServer")
+    r.parseFiles("lighttpd")
